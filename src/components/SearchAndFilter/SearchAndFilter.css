@@ -1,0 +1,42 @@
+/* src/components/SearchAndFilter/SearchAndFilter.css */
+.search-filter-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #2196F3;
+  }
+  
+  .category-select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    min-width: 150px;
+  }
+  
+  @media (max-width: 768px) {
+    .search-filter-container {
+      flex-direction: column;
+    }
+    
+    .search-input,
+    .category-select {
+      width: 100%;
+    }
+  }

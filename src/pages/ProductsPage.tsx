@@ -1,9 +1,10 @@
+// src/pages/ProductsPage.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductList } from '../components/ProductList/ProductList';
 import { ProductFilter } from '../components/ProductFilter/ProductFilter';
-import { AdvancedFilter } from '../components/AdvancedFilter/AdvancedFilter';
 import { Pagination } from '../components/Pagination/Pagination';
+import { SearchAndFilter } from '../components/SearchAndFilter/SearchAndFilter';
 import { useStore } from '../store/useStore';
 import './ProductsPage.css';
 
@@ -21,81 +22,55 @@ export const ProductsPage: React.FC = () => {
     setFilter
   } = useStore();
 
+  // Состояния для поиска и фильтрации
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 6;
 
-  // Состояние для расширенных фильтров
-  const [advancedFilters, setAdvancedFilters] = useState({
-    priceRange: { min: '', max: '' },
-    brand: '',
-    category: '',
-    stock: { min: '', max: '' }
-  });
+  // Получаем уникальные категории
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+    return uniqueCategories.sort();
+  }, [products]);
 
-  // Получаем уникальные бренды и категории
-  const brands = useMemo(() => 
-    [...new Set(products.map(product => product.brand))],
-    [products]
-  );
-
-  const categories = useMemo(() => 
-    [...new Set(products.map(product => product.category))],
-    [products]
-  );
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filter, advancedFilters]);
-
-  // Применяем все фильтры
+  // Фильтрация продуктов
   const filteredProducts = useMemo(() => {
     let filtered = filter === 'all' 
       ? products 
       : products.filter(product => product.isLiked);
 
-    // Применяем расширенные фильтры
-    if (advancedFilters.priceRange.min) {
-      filtered = filtered.filter(
-        product => product.price >= Number(advancedFilters.priceRange.min)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => 
+        product.title.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query)
       );
     }
-    if (advancedFilters.priceRange.max) {
-      filtered = filtered.filter(
-        product => product.price <= Number(advancedFilters.priceRange.max)
-      );
-    }
-    if (advancedFilters.brand) {
-      filtered = filtered.filter(
-        product => product.brand === advancedFilters.brand
-      );
-    }
-    if (advancedFilters.category) {
-      filtered = filtered.filter(
-        product => product.category === advancedFilters.category
-      );
-    }
-    if (advancedFilters.stock.min) {
-      filtered = filtered.filter(
-        product => product.stock >= Number(advancedFilters.stock.min)
-      );
-    }
-    if (advancedFilters.stock.max) {
-      filtered = filtered.filter(
-        product => product.stock <= Number(advancedFilters.stock.max)
+
+    if (selectedCategory) {
+      filtered = filtered.filter(product => 
+        product.category === selectedCategory
       );
     }
 
     return filtered;
-  }, [products, filter, advancedFilters]);
+  }, [products, filter, searchQuery, selectedCategory]);
 
+  // Пагинация
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  // Сброс страницы при изменении фильтров
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, filter]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -137,10 +112,12 @@ export const ProductsPage: React.FC = () => {
         </button>
       </div>
 
-      <AdvancedFilter
-        onFilterChange={setAdvancedFilters}
-        brands={brands}
+      <SearchAndFilter
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
         categories={categories}
+        onCategoryChange={setSelectedCategory}
       />
 
       {isLoading && !products.length ? (
@@ -150,7 +127,7 @@ export const ProductsPage: React.FC = () => {
       ) : (
         <>
           <div className="products-count">
-            Showing {filteredProducts.length} products
+            Found: {filteredProducts.length} products
           </div>
           <ProductList 
             products={currentProducts}
