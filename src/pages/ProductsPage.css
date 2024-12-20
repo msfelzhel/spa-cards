@@ -99,3 +99,12 @@
     width: 100%;
   }
 }
+.products-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.products-list-container {
+  flex: 1;
+}
