@@ -1,44 +1,59 @@
-import create from 'zustand';
-import { DogCard } from '../types/types';
+import { create } from 'zustand';
+import { Product } from '../types/types';
+
+const DUMMY_PRODUCTS: Product[] = [
+    {
+        id: '1',
+        title: 'Product 1',
+        description: 'Description for product 1. This is a test description that might be long enough to be truncated.',
+        imageUrl: 'https://picsum.photos/300/200?random=1',
+        isLiked: false,
+    },
+    {
+        id: '2',
+        title: 'Product 2',
+        description: 'Description for product 2. Another test description that should be truncated in the card view.',
+        imageUrl: 'https://picsum.photos/300/200?random=2',
+        isLiked: false,
+    },
+    {
+        id: '3',
+        title: 'Product 3',
+        description: 'Description for product 3. Yet another test description that should be truncated in the card view.',
+        imageUrl: 'https://picsum.photos/300/200?random=3',
+        isLiked: false,
+    }
+];
 
 interface StoreState {
-    cards: DogCard[];
-    addCard: (card: DogCard) => void;
-    removeCard: (id: string) => void;
-    fetchRandomDog: () => Promise<void>;
+    products: Product[];
+    filter: 'all' | 'liked';
+    toggleLike: (id: string) => void;
+    removeProduct: (id: string) => void;
+    setFilter: (filter: 'all' | 'liked') => void;
+    getFilteredProducts: () => Product[];
 }
 
-export const useStore = create<StoreState>((set) => ({
-    cards: [],
+export const useStore = create<StoreState>((set, get) => ({
+    products: DUMMY_PRODUCTS,
+    filter: 'all',
 
-    addCard: (card) =>
+    toggleLike: (id) =>
         set((state) => ({
-            cards: [...state.cards, card]
+            products: state.products.map((product) =>
+                product.id === id ? { ...product, isLiked: !product.isLiked } : product
+            ),
         })),
 
-    removeCard: (id) =>
+    removeProduct: (id) =>
         set((state) => ({
-            cards: state.cards.filter(card => card.id !== id)
+            products: state.products.filter((product) => product.id !== id),
         })),
 
-    fetchRandomDog: async () => {
-        try {
-            const response = await fetch('https://dog.ceo/api/breeds/image/random');
-            const data = await response.json();
+    setFilter: (filter) => set({ filter }),
 
-            const newCard: DogCard = {
-                id: Date.now().toString(),
-                imageUrl: data.message,
-                breed: data.message.split('/')[4],
-                name: `Dog ${Date.now()}`,
-                isCustom: false
-            };
-
-            set((state) => ({
-                cards: [...state.cards, newCard]
-            }));
-        } catch (error) {
-            console.error('Error fetching dog:', error);
-        }
-    }
+    getFilteredProducts: () => {
+        const { products, filter } = get();
+        return filter === 'all' ? products : products.filter((product) => product.isLiked);
+    },
 }));

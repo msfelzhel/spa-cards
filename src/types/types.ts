@@ -1,7 +1,7 @@
-export interface DogCard {
+export interface Product {
     id: string;
+    title: string;
+    description: string;
     imageUrl: string;
-    name: string;
-    breed: string;
-    isCustom: boolean;
+    isLiked: boolean;
 }
