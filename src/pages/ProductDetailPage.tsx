@@ -1,3 +1,4 @@
+// src/pages/ProductDetailPage.tsx
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
