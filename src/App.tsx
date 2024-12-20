@@ -3,18 +3,20 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Header } from './components/Header/Header';
 import { ProductsPage } from './pages/ProductsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { CreateProductPage } from './pages/CreateProductPage';
 import './App.css';
 
 const App: React.FC = () => {
   return (
     <Router>
       <div className="app">
-        <Header userLogin="felix" />
+        <Header userLogin="msfelzhel" />
         <div className="main-content">
           <Routes>
             <Route path="/" element={<Navigate to="/products" replace />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/create-product" element={<CreateProductPage />} />
           </Routes>
         </div>
       </div>

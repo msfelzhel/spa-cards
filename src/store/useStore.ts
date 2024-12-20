@@ -6,7 +6,7 @@ import { api } from '../services/api';
 
 interface StoreState {
   products: Product[];
-  deletedProductIds: string[]; // Добавляем массив удаленных ID
+  deletedProductIds: string[];
   filter: 'all' | 'liked';
   isLoading: boolean;
   error: string | null;
@@ -17,13 +17,14 @@ interface StoreState {
   removeProduct: (id: string) => void;
   setFilter: (filter: 'all' | 'liked') => void;
   fetchProductById: (id: string) => Promise<void>;
+  createProduct: (product: Product) => void; // Добавляем новый метод в интерфейс
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       products: [],
-      deletedProductIds: [], // Инициализируем пустым массивом
+      deletedProductIds: [],
       filter: 'all',
       isLoading: false,
       error: null,
@@ -35,18 +36,15 @@ export const useStore = create<StoreState>()(
           const products = await api.getProducts();
           const { deletedProductIds, products: currentProducts } = get();
           
-          // Фильтруем удаленные продукты
           const filteredProducts = products.filter(
             product => !deletedProductIds.includes(product.id)
           );
 
-          // Сохраняем лайки при обновлении продуктов
           const updatedProducts = filteredProducts.map(newProduct => {
             const existingProduct = currentProducts.find(p => p.id === newProduct.id);
             return existingProduct ? { ...newProduct, isLiked: existingProduct.isLiked } : newProduct;
           });
           
-          // Добавляем рандомные продукты, которые уже были добавлены
           const randomProducts = currentProducts.filter(
             product => !filteredProducts.find(p => p.id === product.id) && 
                       !deletedProductIds.includes(product.id)
@@ -64,7 +62,6 @@ export const useStore = create<StoreState>()(
           const newProduct = await api.getRandomProduct();
           const { products, deletedProductIds } = get();
           
-          // Проверяем, не был ли продукт удален ранее и не существует ли уже
           if (!deletedProductIds.includes(newProduct.id) && 
               !products.find(p => p.id === newProduct.id)) {
             set((state) => ({
@@ -72,7 +69,6 @@ export const useStore = create<StoreState>()(
               isLoading: false
             }));
           } else {
-            // Если продукт уже существует или был удален, пробуем получить другой
             get().addRandomProduct();
           }
         } catch (error) {
@@ -93,7 +89,7 @@ export const useStore = create<StoreState>()(
       removeProduct: (id) =>
         set((state) => ({
           products: state.products.filter((product) => product.id !== id),
-          deletedProductIds: [...state.deletedProductIds, id], // Добавляем ID в список удаленных
+          deletedProductIds: [...state.deletedProductIds, id],
           currentProduct: state.currentProduct?.id === id ? null : state.currentProduct
         })),
 
@@ -103,33 +99,36 @@ export const useStore = create<StoreState>()(
         try {
           const { deletedProductIds } = get();
           
-          // Проверяем, не был ли продукт удален
           if (deletedProductIds.includes(id)) {
             set({ error: 'Product was deleted', isLoading: false });
             return;
           }
 
           set({ isLoading: true, error: null });
-          // Сначала проверяем, есть ли продукт в текущем списке
           const existingProduct = get().products.find(p => p.id === id);
           if (existingProduct) {
             set({ currentProduct: existingProduct, isLoading: false });
             return;
           }
 
-          // Если нет, загружаем с сервера
           const product = await api.getProductById(id);
           set({ currentProduct: product, isLoading: false });
         } catch (error) {
           set({ error: 'Failed to fetch product details', isLoading: false });
         }
       },
+
+      // Добавляем новый метод createProduct
+      createProduct: (product) => 
+        set((state) => ({
+          products: [...state.products, product]
+        })),
     }),
     {
       name: 'products-storage',
       partialize: (state) => ({ 
         products: state.products,
-        deletedProductIds: state.deletedProductIds, // Добавляем в сохранение
+        deletedProductIds: state.deletedProductIds,
         filter: state.filter
       }),
     }

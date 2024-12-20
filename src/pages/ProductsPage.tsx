@@ -1,10 +1,13 @@
+// src/pages/ProductsPage.tsx
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductList } from '../components/ProductList/ProductList';
 import { ProductFilter } from '../components/ProductFilter/ProductFilter';
 import { useStore } from '../store/useStore';
 import './ProductsPage.css';
 
 export const ProductsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { 
     products,
     filter,
@@ -58,6 +61,12 @@ export const ProductsPage: React.FC = () => {
           disabled={isLoading}
         >
           {isLoading ? 'Adding...' : 'Add Random Product'}
+        </button>
+        <button 
+          className="create-product-button"
+          onClick={() => navigate('/create-product')}
+        >
+          Create New Product
         </button>
       </div>
       {isLoading && !products.length ? (
