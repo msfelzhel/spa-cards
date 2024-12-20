@@ -33,10 +33,10 @@ export const Header: React.FC<HeaderProps> = ({ userLogin }) => {
     <header className="header">
       <div className="header-content">
         <div className="datetime">
-          Текущая дата и время: {formatDateTime(currentDateTime)}
+          Time: {formatDateTime(currentDateTime)}
         </div>
         <div className="user-info">
-          Логин пользователя: {userLogin}
+          User: {userLogin}
         </div>
       </div>
     </header>
