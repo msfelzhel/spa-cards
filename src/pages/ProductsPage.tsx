@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductList } from '../components/ProductList/ProductList';
 import { ProductFilter } from '../components/ProductFilter/ProductFilter';
+import { AdvancedFilter } from '../components/AdvancedFilter/AdvancedFilter';
 import { Pagination } from '../components/Pagination/Pagination';
 import { useStore } from '../store/useStore';
 import './ProductsPage.css';
@@ -20,31 +21,77 @@ export const ProductsPage: React.FC = () => {
     setFilter
   } = useStore();
 
-  // Добавляем состояние для пагинации
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8; // Количество продуктов на странице
+  const productsPerPage = 6;
+
+  // Состояние для расширенных фильтров
+  const [advancedFilters, setAdvancedFilters] = useState({
+    priceRange: { min: '', max: '' },
+    brand: '',
+    category: '',
+    stock: { min: '', max: '' }
+  });
+
+  // Получаем уникальные бренды и категории
+  const brands = useMemo(() => 
+    [...new Set(products.map(product => product.brand))],
+    [products]
+  );
+
+  const categories = useMemo(() => 
+    [...new Set(products.map(product => product.category))],
+    [products]
+  );
 
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        await fetchProducts();
-      } catch (error) {
-        console.error('Error loading products:', error);
-      }
-    };
-    loadProducts();
+    fetchProducts();
   }, [fetchProducts]);
 
-  // Сбрасываем страницу при изменении фильтра
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter]);
+  }, [filter, advancedFilters]);
 
-  const filteredProducts = filter === 'all' 
-    ? products 
-    : products.filter(product => product.isLiked);
+  // Применяем все фильтры
+  const filteredProducts = useMemo(() => {
+    let filtered = filter === 'all' 
+      ? products 
+      : products.filter(product => product.isLiked);
 
-  // Вычисляем продукты для текущей страницы
+    // Применяем расширенные фильтры
+    if (advancedFilters.priceRange.min) {
+      filtered = filtered.filter(
+        product => product.price >= Number(advancedFilters.priceRange.min)
+      );
+    }
+    if (advancedFilters.priceRange.max) {
+      filtered = filtered.filter(
+        product => product.price <= Number(advancedFilters.priceRange.max)
+      );
+    }
+    if (advancedFilters.brand) {
+      filtered = filtered.filter(
+        product => product.brand === advancedFilters.brand
+      );
+    }
+    if (advancedFilters.category) {
+      filtered = filtered.filter(
+        product => product.category === advancedFilters.category
+      );
+    }
+    if (advancedFilters.stock.min) {
+      filtered = filtered.filter(
+        product => product.stock >= Number(advancedFilters.stock.min)
+      );
+    }
+    if (advancedFilters.stock.max) {
+      filtered = filtered.filter(
+        product => product.stock <= Number(advancedFilters.stock.max)
+      );
+    }
+
+    return filtered;
+  }, [products, filter, advancedFilters]);
+
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
@@ -90,12 +137,21 @@ export const ProductsPage: React.FC = () => {
         </button>
       </div>
 
+      <AdvancedFilter
+        onFilterChange={setAdvancedFilters}
+        brands={brands}
+        categories={categories}
+      />
+
       {isLoading && !products.length ? (
         <div className="loading">Loading products...</div>
       ) : filteredProducts.length === 0 ? (
         <div className="no-products">No products found</div>
       ) : (
         <>
+          <div className="products-count">
+            Showing {filteredProducts.length} products
+          </div>
           <ProductList 
             products={currentProducts}
             onLike={toggleLike}
