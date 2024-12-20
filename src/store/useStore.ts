@@ -1,33 +1,14 @@
 import { create } from 'zustand';
 import { Product } from '../types/types';
-
-const DUMMY_PRODUCTS: Product[] = [
-    {
-        id: '1',
-        title: 'Product 1',
-        description: 'Description for product 1. This is a test description that might be long enough to be truncated.',
-        imageUrl: 'https://picsum.photos/300/200?random=1',
-        isLiked: false,
-    },
-    {
-        id: '2',
-        title: 'Product 2',
-        description: 'Description for product 2. Another test description that should be truncated in the card view.',
-        imageUrl: 'https://picsum.photos/300/200?random=2',
-        isLiked: false,
-    },
-    {
-        id: '3',
-        title: 'Product 3',
-        description: 'Description for product 3. Yet another test description that should be truncated in the card view.',
-        imageUrl: 'https://picsum.photos/300/200?random=3',
-        isLiked: false,
-    }
-];
+import { api } from '../services/api';
 
 interface StoreState {
     products: Product[];
     filter: 'all' | 'liked';
+    isLoading: boolean;
+    error: string | null;
+    fetchProducts: () => Promise<void>;
+    addRandomProduct: () => Promise<void>;
     toggleLike: (id: string) => void;
     removeProduct: (id: string) => void;
     setFilter: (filter: 'all' | 'liked') => void;
@@ -35,8 +16,33 @@ interface StoreState {
 }
 
 export const useStore = create<StoreState>((set, get) => ({
-    products: DUMMY_PRODUCTS,
+    products: [],
     filter: 'all',
+    isLoading: false,
+    error: null,
+
+    fetchProducts: async () => {
+        try {
+            set({ isLoading: true, error: null });
+            const products = await api.getProducts();
+            set({ products, isLoading: false });
+        } catch (error) {
+            set({ error: 'Failed to fetch products', isLoading: false });
+        }
+    },
+
+    addRandomProduct: async () => {
+        try {
+            set({ isLoading: true, error: null });
+            const newProduct = await api.getRandomProduct();
+            set((state) => ({
+                products: [...state.products, newProduct],
+                isLoading: false
+            }));
+        } catch (error) {
+            set({ error: 'Failed to add random product', isLoading: false });
+        }
+    },
 
     toggleLike: (id) =>
         set((state) => ({
