@@ -17,8 +17,10 @@ interface StoreState {
   removeProduct: (id: string) => void;
   setFilter: (filter: 'all' | 'liked') => void;
   fetchProductById: (id: string) => Promise<void>;
-  createProduct: (product: Product) => void; // Добавляем новый метод в интерфейс
+  createProduct: (product: Product) => void;
+   // Добавляем новый метод в интерфейс
 }
+
 
 export const useStore = create<StoreState>()(
   persist(
@@ -37,16 +39,16 @@ export const useStore = create<StoreState>()(
           const { deletedProductIds, products: currentProducts } = get();
           
           const filteredProducts = products.filter(
-            product => !deletedProductIds.includes(product.id)
+            (product: Product) => !deletedProductIds.includes(product.id)
           );
 
-          const updatedProducts = filteredProducts.map(newProduct => {
+          const updatedProducts = filteredProducts.map((newProduct: Product) => {
             const existingProduct = currentProducts.find(p => p.id === newProduct.id);
             return existingProduct ? { ...newProduct, isLiked: existingProduct.isLiked } : newProduct;
           });
           
           const randomProducts = currentProducts.filter(
-            product => !filteredProducts.find(p => p.id === product.id) && 
+            product => !filteredProducts.find((p: Product) => p.id === product.id) && 
                       !deletedProductIds.includes(product.id)
           );
           

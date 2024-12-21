@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../../store/useStore';
 import './styles.css';
 
 interface ProductFormData {
@@ -15,7 +14,6 @@ interface ProductFormData {
 
 export const ProductForm: React.FC = () => {
   const navigate = useNavigate();
-  const { addProduct } = useStore();
   const [errors, setErrors] = React.useState<Partial<ProductFormData>>({});
   const [formData, setFormData] = React.useState<ProductFormData>({
     title: '',
@@ -85,20 +83,6 @@ export const ProductForm: React.FC = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      const newProduct = {
-        id: Date.now().toString(),
-        title: formData.title,
-        description: formData.description,
-        price: Number(formData.price),
-        brand: formData.brand,
-        category: formData.category,
-        stock: Number(formData.stock),
-        imageUrl: formData.imageUrl,
-        isLiked: false,
-        rating: 0
-      };
-
-      addProduct(newProduct);
       navigate('/products');
     }
   };

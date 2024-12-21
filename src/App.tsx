@@ -6,7 +6,8 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CreateProductPage } from './pages/CreateProductPage';
 import './App.css';
 
-const App: React.FC = () => {
+
+function App() {
   return (
     <Router>
       <div className="app">
@@ -22,6 +23,6 @@ const App: React.FC = () => {
       </div>
     </Router>
   );
-};
+}
 
 export default App;
