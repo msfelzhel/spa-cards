@@ -1,15 +1,14 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header/Header';
 import { ProductsPage } from './pages/ProductsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CreateProductPage } from './pages/CreateProductPage';
 import './App.css';
 
-
 function App() {
   return (
-    <Router>
+    <HashRouter>
       <div className="app">
         <Header userLogin="msfelzhel" />
         <div className="main-content">
@@ -21,7 +20,7 @@ function App() {
           </Routes>
         </div>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
 
